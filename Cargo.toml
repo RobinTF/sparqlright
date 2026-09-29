@@ -9,6 +9,9 @@ readme = "README.md"
 keywords = ["sparql", "fuzzing", "testing", "rdf", "generator"]
 categories = ["development-tools::testing", "command-line-utilities"]
 
+[workspace]
+members = ["ffi"]
+
 [dependencies]
 anyhow = "1.0.104"
 bitflags = { version = "2.13.2", features = ["serde"] }

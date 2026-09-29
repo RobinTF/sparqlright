@@ -26,6 +26,7 @@
 //! assert_eq!(generator.query(42, &mut provider).text, generated.text);
 //! ```
 
+mod choices;
 mod context;
 mod expr;
 mod pattern;
@@ -44,6 +45,7 @@ use crate::config::GeneratorConfig;
 use crate::extension::Extension;
 use crate::provider::CompletionProvider;
 
+use choices::ChoiceSource;
 use context::Gen;
 
 /// Generates random SPARQL queries and updates.
@@ -134,8 +136,46 @@ impl Generator {
     /// The result is fully determined by the seed, the configuration and the
     /// answers of the provider.
     pub fn query(&self, seed: u64, provider: &mut dyn CompletionProvider) -> GeneratedQuery {
-        let rng = ChaCha8Rng::seed_from_u64(seed);
-        let mut gen_ = Gen::new(&self.config, &self.extensions, provider, rng);
+        let choices = ChoiceSource::Seeded(ChaCha8Rng::seed_from_u64(seed));
+        self.query_with(seed, choices, provider)
+    }
+
+    /// Generates an update request from `seed`, taking values from `provider`.
+    pub fn update(&self, seed: u64, provider: &mut dyn CompletionProvider) -> GeneratedUpdate {
+        let choices = ChoiceSource::Seeded(ChaCha8Rng::seed_from_u64(seed));
+        self.update_with(seed, choices, provider)
+    }
+
+    /// Generates a query whose random choices are read from `data`.
+    ///
+    /// This is the entry point for coverage-guided fuzzing: a fuzzer mutates
+    /// `data`, and every byte string yields a valid query. Once `data` is
+    /// exhausted, all optional constructs are omitted. The `seed` of the
+    /// result is 0.
+    pub fn query_from_bytes(
+        &self,
+        data: &[u8],
+        provider: &mut dyn CompletionProvider,
+    ) -> GeneratedQuery {
+        self.query_with(0, ChoiceSource::from_bytes(data), provider)
+    }
+
+    /// Generates an update request whose random choices are read from `data`.
+    pub fn update_from_bytes(
+        &self,
+        data: &[u8],
+        provider: &mut dyn CompletionProvider,
+    ) -> GeneratedUpdate {
+        self.update_with(0, ChoiceSource::from_bytes(data), provider)
+    }
+
+    fn query_with(
+        &self,
+        seed: u64,
+        choices: ChoiceSource,
+        provider: &mut dyn CompletionProvider,
+    ) -> GeneratedQuery {
+        let mut gen_ = Gen::new(&self.config, &self.extensions, provider, choices);
         let query = gen_.query();
         let (text, stats) = gen_.finish();
         debug_assert_eq!(
@@ -151,10 +191,13 @@ impl Generator {
         }
     }
 
-    /// Generates an update request from `seed`, taking values from `provider`.
-    pub fn update(&self, seed: u64, provider: &mut dyn CompletionProvider) -> GeneratedUpdate {
-        let rng = ChaCha8Rng::seed_from_u64(seed);
-        let mut gen_ = Gen::new(&self.config, &self.extensions, provider, rng);
+    fn update_with(
+        &self,
+        seed: u64,
+        choices: ChoiceSource,
+        provider: &mut dyn CompletionProvider,
+    ) -> GeneratedUpdate {
+        let mut gen_ = Gen::new(&self.config, &self.extensions, provider, choices);
         let update = gen_.update();
         let (text, stats) = gen_.finish();
         debug_assert_eq!(

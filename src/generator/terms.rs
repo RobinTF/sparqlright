@@ -3,7 +3,6 @@
 use oxrdf::vocab::xsd;
 use oxrdf::{NamedNodeRef, Term};
 use rand::RngExt;
-use rand_chacha::ChaCha8Rng;
 
 use super::context::Gen;
 use crate::ast::{
@@ -29,7 +28,11 @@ pub(super) fn is_representable(term: &Term) -> bool {
 }
 
 /// A term used when no provider suggestion is usable.
-pub(super) fn fallback_term(rng: &mut ChaCha8Rng, accepts: TermKinds, expected: ValueType) -> Term {
+pub(super) fn fallback_term(
+    rng: &mut impl rand::Rng,
+    accepts: TermKinds,
+    expected: ValueType,
+) -> Term {
     use oxrdf::{Literal as RdfLiteral, NamedNode};
     let wants_iri = matches!(expected, ValueType::Iri | ValueType::Any);
     if accepts.contains(TermKinds::IRI) && (wants_iri || !accepts.contains(TermKinds::LITERAL)) {

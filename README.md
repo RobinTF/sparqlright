@@ -143,6 +143,48 @@ functions (with signatures), prefixes and whole group elements, all written
 in standard syntax (function calls, magic predicates, `SERVICE`). No
 extensions ship yet; generated queries are standard SPARQL 1.1.
 
+## Coverage-guided fuzzing
+
+Besides the black-box `fuzz` command, SPARQLright can drive an engine
+in-process under [libFuzzer](https://llvm.org/docs/LibFuzzer.html). The
+fuzzer mutates byte strings, and the generator reads its random choices from
+those bytes instead of a seeded generator (`Generator::query_from_bytes`).
+This is *semantic fuzzing* as in Zest/JQF (Padhye et al., ISSTA 2019):
+coverage feedback steers the generator's choices, and because the generator
+is valid by construction, every input is a valid query. Values still come
+from a completion provider: the engine's data file, the engine itself (via a
+callback), or a fixed vocabulary.
+
+The C API is in [`ffi/`](ffi) (`ffi/include/sparqlright.h`); the QLever
+harness is in [`fuzz/qlever/`](fuzz/qlever). To build and run it:
+
+```sh
+# 1. A QLever build with coverage instrumentation and AddressSanitizer
+cmake -G Ninja -S ../qlever -B ../qlever/cmake-build-fuzz \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_C_COMPILER=clang-18 -DCMAKE_CXX_COMPILER=clang++-18 \
+  -DCMAKE_C_FLAGS="-fsanitize=fuzzer-no-link,address -fno-omit-frame-pointer" \
+  -DCMAKE_CXX_FLAGS="-fsanitize=fuzzer-no-link,address -fno-omit-frame-pointer"
+
+# 2. The harness (reuses QLever's compile and link commands)
+fuzz/qlever/build.sh ../qlever ../qlever/cmake-build-fuzz
+
+# 3. An index (any qlever-index of the same commit) and a run
+qlever-index -i /tmp/fuzz/small -f tests/data/small.ttl -F ttl
+SPARQLRIGHT_INDEX=/tmp/fuzz/small SPARQLRIGHT_DATA=tests/data/small.ttl \
+  ../qlever/cmake-build-fuzz/qlever-sparqlright-fuzzer corpus/ \
+  -rss_limit_mb=8192 -timeout=30 -fork=8 -ignore_crashes=1 -ignore_timeouts=1
+```
+
+An input is saved as a crash if QLever reports an internal error (a failed
+internal check that asks to be reported, or a `std::logic_error`), or if
+AddressSanitizer finds a memory error. Running the fuzzer binary on a saved
+input prints the generated query. The harness is configured with environment
+variables (`SPARQLRIGHT_PROVIDER`, `SPARQLRIGHT_CONFIG`,
+`SPARQLRIGHT_TIMEOUT_MS`, `SPARQLRIGHT_IGNORE` for known limitations,
+`SPARQLRIGHT_VERBOSE`); see the header of
+[`qlever_fuzzer.cpp`](fuzz/qlever/qlever_fuzzer.cpp).
+
 ## Testing
 
 ```sh

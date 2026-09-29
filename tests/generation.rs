@@ -192,3 +192,39 @@ fn recorded_answers_replay_to_the_same_queries() {
         assert_eq!(replay.remaining(), 0);
     }
 }
+
+#[test]
+fn every_byte_string_yields_a_valid_request() {
+    use rand::{Rng, SeedableRng};
+    let generator = Generator::default();
+    let mut provider = mixed(dataset_provider());
+    let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(7);
+    let mut failures = Vec::new();
+    for i in 0..2000 {
+        let mut data = vec![0u8; i % 700];
+        rng.fill_bytes(&mut data);
+        let q = generator.query_from_bytes(&data, &mut provider);
+        assert_eq!(q.text, q.query.to_string());
+        if let Some(e) = validate_query(&q.text).error() {
+            failures.push(format!("input {i}: {e}\n  {}", q.text));
+        }
+        let u = generator.update_from_bytes(&data, &mut provider);
+        if let Some(e) = validate_update(&u.text).error() {
+            failures.push(format!("update input {i}: {e}\n  {}", u.text));
+        }
+        // The same bytes give the same query.
+        assert_eq!(
+            generator.query_from_bytes(&data, &mut provider).text,
+            q.text
+        );
+    }
+    assert!(
+        failures.is_empty(),
+        "{} invalid:\n{}",
+        failures.len(),
+        failures[..failures.len().min(10)].join("\n")
+    );
+    let empty = generator.query_from_bytes(&[], &mut provider);
+    assert!(validate_query(&empty.text).error().is_none());
+    assert!(empty.text.len() < 500, "{}", empty.text);
+}

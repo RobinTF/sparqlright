@@ -3,7 +3,6 @@
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 use rand::RngExt;
-use rand_chacha::ChaCha8Rng;
 
 use super::GenerationStats;
 use crate::ast::{TokenWriter, VarSigil, Variable, WriteSparql};
@@ -107,7 +106,7 @@ pub(super) enum Value {
 
 /// The generator state.
 pub(crate) struct Gen<'a> {
-    pub rng: ChaCha8Rng,
+    pub rng: super::choices::ChoiceSource,
     pub w: Weights,
     pub limits: &'a Limits,
     pub config: &'a GeneratorConfig,
@@ -145,7 +144,7 @@ impl<'a> Gen<'a> {
         config: &'a GeneratorConfig,
         extensions: &'a [Box<dyn Extension>],
         provider: &'a mut dyn CompletionProvider,
-        mut rng: ChaCha8Rng,
+        mut rng: super::choices::ChoiceSource,
     ) -> Self {
         let (w, disabled) = config.swarm.apply(&config.weights, &mut rng);
         let functions = extensions.iter().flat_map(|e| e.functions()).collect();

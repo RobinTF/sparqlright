@@ -169,12 +169,28 @@ cmake -G Ninja -S ../qlever -B ../qlever/cmake-build-fuzz \
 # 2. The harness (reuses QLever's compile and link commands)
 fuzz/qlever/build.sh ../qlever ../qlever/cmake-build-fuzz
 
-# 3. An index (any qlever-index of the same commit) and a run
+# 3. An index (any qlever-index of the same commit)
 qlever-index -i /tmp/fuzz/small -f tests/data/small.ttl -F ttl
+
+# 4. A seed corpus of random inputs (see below), then a run
+mkdir -p corpus && for i in $(seq 500); do head -c 1024 /dev/urandom > corpus/seed-$i; done
 SPARQLRIGHT_INDEX=/tmp/fuzz/small SPARQLRIGHT_DATA=tests/data/small.ttl \
   ../qlever/cmake-build-fuzz/qlever-sparqlright-fuzzer corpus/ \
-  -rss_limit_mb=8192 -timeout=30 -fork=8 -ignore_crashes=1 -ignore_timeouts=1
+  -rss_limit_mb=8192 -timeout=30 -max_len=2048 -fork=8 \
+  -ignore_crashes=1 -ignore_timeouts=1 -ignore_ooms=1
 ```
+
+**Use a seed corpus.** Random byte strings make the generator behave like
+the seeded mode, so libFuzzer starts from the same diverse queries as the
+black-box campaigns. Started from an empty corpus, libFuzzer grows its inputs
+only slowly and explores mostly tiny queries. In one comparison against
+QLever, 20 minutes without seeds reached 24,902 edges and found nothing,
+while 10 minutes with 500 random 1 KB seeds reached 187,041 edges and found
+four assertion failures.
+
+To check a single query against the harness's error classification (for
+example a reproducer), set `SPARQLRIGHT_QUERY_FILE` to a file containing it
+and run the fuzzer binary without arguments.
 
 An input is saved as a crash if QLever reports an internal error (a failed
 internal check that asks to be reported, or a `std::logic_error`), or if

@@ -23,6 +23,9 @@
 //   SPARQLRIGHT_IGNORE      `|`-separated message substrings that are known
 //                           limitations and not reported
 //   SPARQLRIGHT_VERBOSE     if set, print every query
+//   SPARQLRIGHT_QUERY_FILE  if set, run the query in this file (instead of a
+//                           generated one) through the same checks and exit;
+//                           useful to check a reproducer
 
 #include <cstdint>
 #include <cstdio>
@@ -117,6 +120,8 @@ std::string readFile(const std::string& path) {
 
 }  // namespace
 
+void check(const std::string& query);
+
 extern "C" int LLVMFuzzerInitialize(int*, char***) {
   auto index = env("SPARQLRIGHT_INDEX");
   if (index.empty()) {
@@ -156,16 +161,16 @@ extern "C" int LLVMFuzzerInitialize(int*, char***) {
               << provider << ")" << std::endl;
     std::exit(1);
   }
+  if (auto path = env("SPARQLRIGHT_QUERY_FILE"); !path.empty()) {
+    check(readFile(path));
+    std::cerr << "SPARQLright: no internal error for " << path << std::endl;
+    std::exit(0);
+  }
   return 0;
 }
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  const char* text = sparqlright_generate(generator, data, size, 0);
-  if (text == nullptr) {
-    std::cerr << "SPARQLright failed to generate a query" << std::endl;
-    std::abort();
-  }
-  std::string query{text};
+// Runs `query` and reports internal errors of QLever as crashes.
+void check(const std::string& query) {
   if (verbose) {
     std::cerr << "---- " << query << std::endl;
   }
@@ -183,5 +188,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       reportBug(query, "internal check", message);
     }
   }
+}
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  const char* text = sparqlright_generate(generator, data, size, 0);
+  if (text == nullptr) {
+    std::cerr << "SPARQLright failed to generate a query" << std::endl;
+    std::abort();
+  }
+  check(text);
   return 0;
 }

@@ -257,3 +257,7 @@ testing, and the formal semantics of SPARQL.
 * Fewer empty results (e.g. fewer constant `FILTER`s, subject suggestions
   connected to the context).
 * Generated datasets, SPARQL 1.2.
+
+## License
+
+SPARQLright is licensed under the [Apache License, Version 2.0](LICENSE).

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 rust-version = "1.88"
 description = "C API of SPARQLright for in-process, coverage-guided fuzzing harnesses"
-license = "MIT OR Apache-2.0"
+license = "Apache-2.0"
 publish = false
 
 [lib]

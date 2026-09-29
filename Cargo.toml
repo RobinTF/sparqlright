@@ -1,0 +1,40 @@
+[package]
+name = "sparqlright"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+description = "A Csmith/SQLsmith-style random SPARQL 1.1 query generator for testing SPARQL engines"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+keywords = ["sparql", "fuzzing", "testing", "rdf", "generator"]
+categories = ["development-tools::testing", "command-line-utilities"]
+
+[dependencies]
+anyhow = "1.0.104"
+bitflags = { version = "2.13.2", features = ["serde"] }
+clap = { version = "4.6.7", features = ["derive"] }
+oxrdf = { version = "0.3.4", features = ["serde"] }
+oxttl = "0.2.4"
+rand = "0.10.3"
+rand_chacha = "0.10.0"
+regex = "1.13.1"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+sparesults = "0.3.4"
+spargebra = "0.4.7"
+thiserror = "2.0.21"
+toml = "1.1.6"
+ureq = "3.4.2"
+
+[dev-dependencies]
+tempfile = "3.27.0"
+
+[lints.rust]
+missing_docs = "warn"
+unsafe_code = "forbid"
+missing_debug_implementations = "warn"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+# The AST mirrors the grammar; names like `ast::GroupGraphPattern` repeat module names by design.
+module_name_repetitions = "allow"

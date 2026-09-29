@@ -1,0 +1,154 @@
+@prefix ex: <http://example.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:Person a rdfs:Class ; rdfs:label "Person"@en .
+ex:City a rdfs:Class ; rdfs:label "City"@en .
+ex:Company a rdfs:Class ; rdfs:label "Company"@en .
+ex:Book a rdfs:Class ; rdfs:label "Book"@en .
+ex:Person rdfs:subClassOf ex:Agent .
+ex:Company rdfs:subClassOf ex:Agent .
+ex:person0 a ex:Person ;
+  ex:name "Alice" ;
+  ex:age 56 ;
+  ex:height "1.59"^^xsd:decimal ;
+  ex:score "3.948e+01"^^xsd:double ;
+  ex:birthDate "1946-02-27"^^xsd:date ;
+  ex:livesIn ex:city4 ;
+  ex:active true ;
+  ex:knows ex:person9 ;
+  rdfs:comment "Alice is a person"@en .
+ex:person1 a ex:Person ;
+  ex:name "Bob" ;
+  ex:age 23 ;
+  ex:height "1.65"^^xsd:decimal ;
+  ex:score "9.071e+00"^^xsd:double ;
+  ex:birthDate "1994-01-27"^^xsd:date ;
+  ex:livesIn ex:city4 ;
+  ex:active true ;
+  ex:knows ex:person10 .
+ex:person2 a ex:Person ;
+  ex:name "Carla" ;
+  ex:age 65 ;
+  ex:height "1.53"^^xsd:decimal ;
+  ex:score "9.763e+01"^^xsd:double ;
+  ex:birthDate "1945-09-28"^^xsd:date ;
+  ex:livesIn ex:city1 ;
+  ex:active false ;
+  ex:knows ex:person8 ;
+  ex:knows ex:person1 ;
+  ex:worksFor ex:company1 ;
+  rdfs:comment "Carla is a person"@fr .
+ex:person3 a ex:Person ;
+  ex:name "Dieter" ;
+  ex:age 62 ;
+  ex:height "1.56"^^xsd:decimal ;
+  ex:score "5.477e+01"^^xsd:double ;
+  ex:birthDate "1948-10-02"^^xsd:date ;
+  ex:livesIn ex:city4 ;
+  ex:active true ;
+  ex:knows ex:person10 ;
+  ex:knows ex:person8 ;
+  ex:knows ex:person6 .
+ex:person4 a ex:Person ;
+  ex:name "Eve" ;
+  ex:age 61 ;
+  ex:height "1.69"^^xsd:decimal ;
+  ex:score "2.484e+01"^^xsd:double ;
+  ex:birthDate "1963-12-25"^^xsd:date ;
+  ex:livesIn ex:city1 ;
+  ex:active true ;
+  ex:knows ex:person8 ;
+  ex:knows ex:person7 ;
+  ex:nick "eve" .
+ex:person5 a ex:Person ;
+  ex:name "Fatima" ;
+  ex:age 24 ;
+  ex:height "1.57"^^xsd:decimal ;
+  ex:score "5.119e+01"^^xsd:double ;
+  ex:birthDate "1961-06-05"^^xsd:date ;
+  ex:livesIn ex:city3 ;
+  ex:active false ;
+  rdfs:comment "Fatima is a person"@fr .
+ex:person6 a ex:Person ;
+  ex:name "Gustav" ;
+  ex:age 55 ;
+  ex:height "1.71"^^xsd:decimal ;
+  ex:score "6.953e+01"^^xsd:double ;
+  ex:birthDate "2003-10-26"^^xsd:date ;
+  ex:livesIn ex:city3 ;
+  ex:active true .
+ex:person7 a ex:Person ;
+  ex:name "Hanna" ;
+  ex:age 22 ;
+  ex:height "1.96"^^xsd:decimal ;
+  ex:score "7.015e+01"^^xsd:double ;
+  ex:birthDate "1997-05-23"^^xsd:date ;
+  ex:livesIn ex:city3 ;
+  ex:active false ;
+  rdfs:comment "Hanna is a person"@fr ;
+  ex:nick "hanna" .
+ex:person8 a ex:Person ;
+  ex:name "Ivan" ;
+  ex:age 22 ;
+  ex:height "1.63"^^xsd:decimal ;
+  ex:score "7.682e+01"^^xsd:double ;
+  ex:birthDate "1956-12-08"^^xsd:date ;
+  ex:livesIn ex:city3 ;
+  ex:active false ;
+  ex:knows ex:person1 ;
+  ex:knows ex:person2 ;
+  ex:knows ex:person7 ;
+  ex:worksFor ex:company2 .
+ex:person9 a ex:Person ;
+  ex:name "Jürgen" ;
+  ex:age 85 ;
+  ex:height "1.67"^^xsd:decimal ;
+  ex:score "7.064e+01"^^xsd:double ;
+  ex:birthDate "1985-11-13"^^xsd:date ;
+  ex:livesIn ex:city1 ;
+  ex:active true ;
+  ex:worksFor ex:company1 ;
+  ex:nick "jürgen" .
+ex:person10 a ex:Person ;
+  ex:name "Kim" ;
+  ex:age 90 ;
+  ex:height "1.61"^^xsd:decimal ;
+  ex:score "2.627e+01"^^xsd:double ;
+  ex:birthDate "1940-03-14"^^xsd:date ;
+  ex:livesIn ex:city4 ;
+  ex:active false ;
+  ex:knows ex:person2 ;
+  ex:knows ex:person8 .
+ex:person11 a ex:Person ;
+  ex:name "Lena" ;
+  ex:age 73 ;
+  ex:height "1.99"^^xsd:decimal ;
+  ex:score "9.519e+01"^^xsd:double ;
+  ex:birthDate "1990-07-13"^^xsd:date ;
+  ex:livesIn ex:city3 ;
+  ex:active true ;
+  ex:knows ex:person10 ;
+  ex:knows ex:person6 ;
+  ex:knows ex:person0 ;
+  ex:worksFor ex:company1 ;
+  ex:nick "lena" .
+ex:city0 a ex:City ; rdfs:label "City 0"@en , "Stadt 0"@de ; ex:population 1260816 ; ex:locatedIn ex:city1 .
+ex:city1 a ex:City ; rdfs:label "City 1"@en , "Stadt 1"@de ; ex:population 111259 ; ex:locatedIn ex:city2 .
+ex:city2 a ex:City ; rdfs:label "City 2"@en , "Stadt 2"@de ; ex:population 215705 ; ex:locatedIn ex:city3 .
+ex:city3 a ex:City ; rdfs:label "City 3"@en , "Stadt 3"@de ; ex:population 1489 ; ex:locatedIn ex:city4 .
+ex:city4 a ex:City ; rdfs:label "City 4"@en , "Stadt 4"@de ; ex:population 1189631 ; ex:locatedIn ex:city0 .
+ex:company0 a ex:Company ; rdfs:label "Company 0" ; ex:founded "1919-01-01T00:00:00Z"^^xsd:dateTime ; ex:revenue 63.12 ; ex:locatedIn ex:city2 .
+ex:company1 a ex:Company ; rdfs:label "Company 1" ; ex:founded "1978-01-01T00:00:00Z"^^xsd:dateTime ; ex:revenue -2.9 ; ex:locatedIn ex:city1 .
+ex:company2 a ex:Company ; rdfs:label "Company 2" ; ex:founded "1978-01-01T00:00:00Z"^^xsd:dateTime ; ex:revenue 43.19 ; ex:locatedIn ex:city2 .
+ex:company3 a ex:Company ; rdfs:label "Company 3" ; ex:founded "1944-01-01T00:00:00Z"^^xsd:dateTime ; ex:revenue 72.46 ; ex:locatedIn ex:city3 .
+ex:book0 a ex:Book ; ex:title "Book \"0\"" ; ex:author ex:person1 ; ex:pages 168 ; ex:isbn "978-624059081" .
+ex:book1 a ex:Book ; ex:title "Book \"1\"" ; ex:author ex:person7 ; ex:pages 541 ; ex:isbn "978-619513506" .
+ex:book2 a ex:Book ; ex:title "Book \"2\"" ; ex:author ex:person4 ; ex:pages 137 ; ex:isbn "978-254744982" .
+ex:book3 a ex:Book ; ex:title "Book \"3\"" ; ex:author ex:person1 ; ex:pages 817 ; ex:isbn "978-467902431" .
+ex:book4 a ex:Book ; ex:title "Book \"4\"" ; ex:author ex:person11 ; ex:pages 321 ; ex:isbn "978-613916392" .
+ex:book5 a ex:Book ; ex:title "Book \"5\"" ; ex:author ex:person11 ; ex:pages 215 ; ex:isbn "978-654409968" .
+ex:person0 ex:address [ ex:street "Main St 1" ; ex:zip "79110" ] .
+ex:book0 ex:tags ( "a" "b" "c" ) .
+ex:misc ex:value 0 , -1 , 1.0 , "1e0"^^xsd:double , "" , "0" , "false" , "x"@EN-us , "NaN"^^xsd:double , "INF"^^xsd:double , "-0.0"^^xsd:double , "2020-01-01T10:00:00"^^xsd:dateTime , "hello"^^xsd:string , "tab\there" .

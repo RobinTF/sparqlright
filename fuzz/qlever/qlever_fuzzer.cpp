@@ -27,15 +27,19 @@
 //                           generated one) through the same checks and exit;
 //                           useful to check a reproducer
 
+#include <chrono>
+#include <condition_variable>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "libqlever/Qlever.h"
@@ -74,12 +78,42 @@ bool isKnownLimitation(const std::string& message) {
   return false;
 }
 
+// Cancels `handle` with a timeout once `timeLimit` has passed, unless it is
+// destroyed before. `libqlever` accepts a time limit but, unlike the server,
+// does not enforce it, so the harness has to (like `Server.cpp` does).
+class Watchdog {
+ public:
+  explicit Watchdog(std::shared_ptr<ad_utility::CancellationHandle<>> handle)
+      : thread_{[this, handle = std::move(handle)] {
+          std::unique_lock lock{mutex_};
+          if (!done_changed_.wait_for(lock, timeLimit, [this] { return done_; })) {
+            handle->cancel(ad_utility::CancellationState::TIMEOUT);
+          }
+        }} {}
+  Watchdog(const Watchdog&) = delete;
+  Watchdog& operator=(const Watchdog&) = delete;
+  ~Watchdog() {
+    {
+      std::lock_guard lock{mutex_};
+      done_ = true;
+    }
+    done_changed_.notify_all();
+    thread_.join();
+  }
+
+ private:
+  std::mutex mutex_;
+  std::condition_variable done_changed_;
+  bool done_ = false;
+  std::thread thread_;
+};
+
 // Runs `query` with the configured time limit and returns the SPARQL JSON
 // result. Exceptions are passed on to the caller.
 std::string run(const std::string& query) {
-  auto planned = engine->parseAndPlanQuery(
-      query, {}, std::make_shared<ad_utility::CancellationHandle<>>(),
-      timeLimit);
+  auto handle = std::make_shared<ad_utility::CancellationHandle<>>();
+  Watchdog watchdog{handle};
+  auto planned = engine->parseAndPlanQuery(query, {}, handle, timeLimit);
   return engine->query(planned, ad_utility::MediaType::sparqlJson);
 }
 
